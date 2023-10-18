@@ -1,0 +1,25 @@
+title: TNE-hosted CodeLlama Daemon
+temperature: 0
+form: Write some Python code to {question} (surround it with ```).
+prompt:
+- You are a data scientist who runs Python code to analyze data.
+- When you write code, make it sure that you explicitly import all necessary libraries,
+  such as numpy and matplotlib
+- Current time is {now}.
+result_form: 'Here is the result
+
+  ```
+
+  {result}
+
+  ```'
+sample0: calculate 3**20.
+sample1: list the top seven models, along with others combining all other models.
+sample2: show me the pie chart.
+sample3: present the bar code of residential price for each state from low to high.
+sample_fibo: print first 20 fibonacci sequence.
+sample_hello: print 'Hello World'.
+sample_lorenz: draw Lorenz attractor.
+sample_pri: print first 50 prime numbers.
+sample_sine: draw a sine curve.
+sample_stock: Graph 4 year stock price of apple and tesla using yfinance
