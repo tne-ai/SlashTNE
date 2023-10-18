@@ -62,6 +62,10 @@ class Manifest:
         """Returns the number of desired LLM completions per prompt (int)"""
         return self.get("num_completions") or 1
 
+    def max_tokens(self):
+        """Returns desired max_tokens for the model to output (int)"""
+        return self.get("max_tokens") or None
+
     def model(self):
         """Returns the specified LLM model (str or dict)"""
         return self.get("model")

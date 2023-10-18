@@ -4,6 +4,7 @@ import os
 import sys
 import yaml
 import platform
+from typing import Optional
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../src"))
 # TODO: status checks
@@ -20,7 +21,6 @@ if platform.system() == "Darwin":
     import readline  # noqa: F401
 
 DB_PORT = 5432
-DB_NAME = "ebp"
 DB_USER = "postgres"
 DB_PASS = "i6XFDgR6KGkTd"
 DB_HOST = "postgresql-ebp.cfwmuvh4blso.us-west-2.rds.amazonaws.com"
@@ -74,8 +74,8 @@ class SimpleSlashGPTServer:
         # TODO: status
         # self.status = status.INITIALIZING
         if not config_path:
-            self.path = os.path.join(os.path.dirname(__file__), "../..")
-        self.config = ChatConfig(self.path)
+            config_path = os.path.join(os.path.dirname(__file__), "../..")
+        self.config = ChatConfig(config_path)
 
         # Read the manifest
         with open(sys.argv[1], 'r') as fp:
@@ -88,6 +88,8 @@ class SimpleSlashGPTServer:
 
         # TODO: status
         # self.status = status.HEALTHY
+
+        self.main = SimpleTNE(self.config, self.manifest, "TNE")
 
     def get_schema(self):
         db_name = self.manifest.get('database')
@@ -127,16 +129,14 @@ class SimpleSlashGPTServer:
 
         return formatter
 
+    def start(self):
+        self.main.start()
+
 if __name__ == "__main__":
-    path = os.path.join(os.path.dirname(__file__), "../..")
-    config = ChatConfig(path)
 
-    # Read the manifest
-    with open(sys.argv[1], 'r') as fp:
-        manifest = yaml.safe_load(fp)
+    # TODO: argparse these
+    config_path = os.path.join(os.path.dirname(__file__), "../..")
+    manifest_path = sys.argv[1]
 
-    print(manifest)
-    breakpoint()
-
-    main = SimpleTNE(config, manifest, "TNE")
-    main.start()
+    server = SimpleSlashGPTServer(manifest_path, config_path)
+    server.start()

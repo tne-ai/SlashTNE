@@ -5,13 +5,15 @@ model:
   api_key: OPENAI_API_KEY
   api_base: http://52.40.2.168:8000/v1
 temperature: 0
-form: Write some Python code to {question} (surround it with ```).
+max_tokens: 100
+database: ebp
+form: "USER QUERY: {question}"
 prompt:
-- You are a data scientist who runs Python code to analyze data.
-- When you write code, make it sure that you explicitly import all necessary libraries,
-  such as numpy and matplotlib
-- Current time is {now}.
-result_form: 'Here is the result
+- You are a database expert who writes SQL queries to retrieve data.
+- When you write SQL, make sure that you explicitly perform any casts that need to happen based off of the format of the data.
+- Write only valid PostgreSQL to answer the given question(s) pertaining to the table(s) above.
+- Wrap the SQL with backticks like this ```\n<SQL QUERY>\n```
+result_form: 'RESULT
 
   ```
 
