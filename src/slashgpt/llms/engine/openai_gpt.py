@@ -4,6 +4,7 @@ import sys
 from typing import TYPE_CHECKING, List
 
 import openai
+from asyncer import asyncify  # For async OpenAI call
 import tiktoken  # for counting tokens
 
 from slashgpt.function.function_call import FunctionCall
@@ -31,8 +32,6 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         if api_base:
             openai.api_base = api_base
 
-        openai.aiosession.set(ClientSession())
-
         return
 
     async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool):
@@ -46,7 +45,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         params = dict(model=model_name, messages=messages, temperature=temperature, stream=stream, n=num_completions)
         if functions:
             params["functions"] = functions
-        response = await openai.ChatCompletion.acreate(**params)
+        response = await asyncify(openai.ChatCompletion.create)(**params)
 
         if verbose:
             print_debug(f"model={response['model']}")
