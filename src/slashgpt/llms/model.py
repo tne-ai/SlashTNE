@@ -92,7 +92,8 @@ class LlmModel:
             manifest (Manifest): it specifies the behavior of the LLM agent
             verbose (bool): True if it's in verbose mode.
         """
-        return await self.engine.chat_completion(messages, manifest, verbose)
+        resp = await self.engine.chat_completion(messages, manifest, verbose)
+        return resp
 
     def num_tokens(self, text: str):
         return self.engine.num_tokens(text)
