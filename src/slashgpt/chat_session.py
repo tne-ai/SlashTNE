@@ -165,7 +165,7 @@ class ChatSession:
             function_call (dict): json representing the function call (optional)
         """
         messages = self.history.messages()
-        (role, res, function_call) = await self.llm_model.generate_response(messages, self.manifest, self.config.verbose)
+        role, res, function_call = await self.llm_model.generate_response(messages, self.manifest, self.config.verbose)
 
         if self.config.verbose and function_call is not None:
             print_info(function_call)
@@ -173,7 +173,7 @@ class ChatSession:
         if role and res:
             self.append_message(role, res, False)
 
-        return (res, function_call)
+        return res, function_call
 
     def call_loop(self, callback: Callable[[str, tuple[str, dict]], None], runtime: PythonRuntime = None):
         """

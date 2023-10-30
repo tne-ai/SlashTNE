@@ -58,7 +58,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
             if res and function_call is None:
                 function_call = self._extract_function_call(messages[-1], manifest, res, True)
 
-        return (role, res, function_call)
+        return role, res, function_call
 
     def __num_tokens(self, text: str):
         model_name = self.llm_model.name()
