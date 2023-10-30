@@ -10,6 +10,8 @@ from slashgpt.function.function_call import FunctionCall
 from slashgpt.llms.engine.base import LLMEngineBase
 from slashgpt.utils.print import print_debug, print_error
 
+from aiohttp import ClientSession
+
 if TYPE_CHECKING:
     from slashgpt.llms.model import LlmModel
     from slashgpt.manifest import Manifest
@@ -29,6 +31,8 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         if api_base:
             openai.api_base = api_base
 
+        openai.aiosession.set(ClientSession())
+
         return
 
     async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool):
@@ -42,7 +46,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         params = dict(model=model_name, messages=messages, temperature=temperature, stream=stream, n=num_completions)
         if functions:
             params["functions"] = functions
-        response = openai.ChatCompletion.acreate(**params)
+        response = await openai.ChatCompletion.acreate(**params)
 
         if verbose:
             print_debug(f"model={response['model']}")
