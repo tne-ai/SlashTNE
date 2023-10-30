@@ -42,7 +42,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         params = dict(model=model_name, messages=messages, temperature=temperature, stream=stream, n=num_completions)
         if functions:
             params["functions"] = functions
-        response = openai.ChatCompletion.create(**params)
+        response = openai.ChatCompletion.acreate(**params)
 
         if verbose:
             print_debug(f"model={response['model']}")
