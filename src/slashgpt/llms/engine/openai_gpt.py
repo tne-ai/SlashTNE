@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING, List
 
+import openai
+from asyncer import asyncify  # For async OpenAI call
 import tiktoken  # for counting tokens
 from openai import OpenAI
 
@@ -31,8 +33,6 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         if api_base:
             self.client.base_url = api_base
 
-        openai.aiosession.set(ClientSession())
-
         return
 
     async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool):
@@ -50,7 +50,6 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
                 params["function_call"] = dict(name=manifest.get("function_call"))
         response = openai.ChatCompletion.acreate(**params)
         token_usage = response.usage.total_tokens
-
 
         if verbose:
             print_debug(f"model={dict(response)['model']}")

@@ -4,7 +4,17 @@ termcolor
 bs4
 tiktoken
 pyyaml
-pyobjc; sys_platform == 'darwin' 
+gTTS
+playsound
+pyobjc; sys_platform == 'darwin'
+IPython
+matplotlib
+numpy
+scipy
+replicate
+pydantic==1.10
+codeboxapi
+gql
 requests-toolbelt
 black[jupyter]
 isort
@@ -12,3 +22,9 @@ flake8
 pytest
 yamllint
 mypy
+yfinance
+flask
+psycopg2-binary
+pgvector
+chromadb
+asyncer
