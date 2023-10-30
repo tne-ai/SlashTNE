@@ -31,7 +31,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
         return
 
-    def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool):
+    async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool):
         model_name = self.llm_model.name()
         temperature = manifest.temperature()
         functions = manifest.functions()
