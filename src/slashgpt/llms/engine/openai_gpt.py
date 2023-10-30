@@ -10,6 +10,8 @@ from slashgpt.function.function_call import FunctionCall
 from slashgpt.llms.engine.base import LLMEngineBase
 from slashgpt.utils.print import print_debug, print_error
 
+from aiohttp import ClientSession
+
 if TYPE_CHECKING:
     from slashgpt.llms.model import LlmModel
     from slashgpt.manifest import Manifest
@@ -28,6 +30,8 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         api_base = llm_model.get_api_base()
         if api_base:
             self.client.base_url = api_base
+
+        openai.aiosession.set(ClientSession())
 
         return
 
