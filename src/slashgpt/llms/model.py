@@ -83,7 +83,7 @@ class LlmModel:
             print_error("No engine name: " + self.engine_name())
             return None
 
-    def generate_response(self, messages: List[dict], manifest: Manifest, verbose: bool):
+    async def generate_response(self, messages: List[dict], manifest: Manifest, verbose: bool):
         """It calls the engine's chat_completion method
 
         Args:
@@ -92,7 +92,7 @@ class LlmModel:
             manifest (Manifest): it specifies the behavior of the LLM agent
             verbose (bool): True if it's in verbose mode.
         """
-        return self.engine.chat_completion(messages, manifest, verbose)
+        return await self.engine.chat_completion(messages, manifest, verbose)
 
     def num_tokens(self, text: str):
         return self.engine.num_tokens(text)
