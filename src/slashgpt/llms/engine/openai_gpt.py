@@ -44,8 +44,9 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
             params["functions"] = functions
             if manifest.get("function_call"):
                 params["function_call"] = dict(name=manifest.get("function_call"))
-        response = self.client.chat.completions.create(**params)
+        response = openai.ChatCompletion.acreate(**params)
         token_usage = response.usage.total_tokens
+
 
         if verbose:
             print_debug(f"model={dict(response)['model']}")
