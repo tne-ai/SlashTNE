@@ -40,9 +40,10 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         functions = manifest.functions()
         stream = manifest.stream()
         num_completions = manifest.num_completions()
+        max_tokens = manifest.max_tokens()
         # LATER: logprobs is invalid with ChatCompletion API
         # logprobs = manifest.logprobs()
-        params = dict(model=model_name, messages=messages, temperature=temperature, stream=stream, n=num_completions)
+        params = dict(model=model_name, messages=messages, temperature=temperature, stream=stream, n=num_completions, max_tokens=max_tokens)
         if functions:
             params["functions"] = functions
         response = await asyncify(openai.ChatCompletion.create)(**params)
