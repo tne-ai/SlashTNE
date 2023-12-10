@@ -3,7 +3,7 @@ from __future__ import annotations
 import importlib
 import inspect
 import os
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, AsyncGenerator
 
 from slashgpt.utils.print import print_error
 
@@ -83,7 +83,7 @@ class LlmModel:
             print_error("No engine name: " + self.engine_name())
             return None
 
-    async def generate_response(self, messages: List[dict], manifest: Manifest, verbose: bool):
+    async def generate_response(self, messages: List[dict], manifest: Manifest, verbose: bool) -> AsyncGenerator:
         """It calls the engine's chat_completion method
 
         Args:
@@ -92,8 +92,8 @@ class LlmModel:
             manifest (Manifest): it specifies the behavior of the LLM agent
             verbose (bool): True if it's in verbose mode.
         """
-        resp = await self.engine.chat_completion(messages, manifest, verbose)
-        return resp
+        async for role, res, function_call in self.engine.chat_completion(messages, manifest, verbose):
+            yield role, res, function_call
 
     def num_tokens(self, text: str):
         return self.engine.num_tokens(text)
