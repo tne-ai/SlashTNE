@@ -68,9 +68,15 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
             yield role, res, function_call
         else:
-            async for response in openai.ChatCompletion.create(**params):
-                for item in await self._process_response(response, functions, manifest, messages):
-                    yield item
+            collected_chunks = []
+            collected_messages = []
+            # TODO(lucas): Support streaming and function calls (this only processes the text)
+            for chunk in openai.ChatCompletion.create(**params):
+                collected_chunks.append(chunk)
+                chunk_message = chunk["choices"][0]["delta"]
+                collected_messages.append(chunk_message)
+                if chunk_message.get("content"):
+                    yield chunk_message.get("content")
 
     def __num_tokens(self, text: str):
         model_name = self.llm_model.name()
