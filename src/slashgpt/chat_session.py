@@ -1,7 +1,7 @@
 import random
 import re
 import uuid
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, AsyncGenerator
 
 from slashgpt.chat_config import ChatConfig
 from slashgpt.chat_history import ChatHistory
@@ -155,9 +155,9 @@ class ChatSession:
         """Title of the AI agent specified in the manifest"""
         return self.manifest.title()
 
-    async def call_llm(self):
+    async def call_llm(self) -> AsyncGenerator:
         """
-        Let the LLM generate a responce based on the messasges in this session.
+        Let the LLM generate a response based on the messages in this session.
         The application typically calls call_loop method instead.
 
         Returns:
@@ -167,15 +167,18 @@ class ChatSession:
             function_call (dict): json representing the function call (optional)
         """
         messages = self.history.messages()
-        (role, res, function_call, token_usage) = await self.llm_model.generate_response(messages, self.manifest, self.config.verbose)
-
-        if self.config.verbose and function_call is not None:
-            print_info(function_call)
+        res, role, function_call, token_usage = None, None, None, None
+        if self.manifest.stream() is False:
+            async for role, res, function_call, token_usage in self.llm_model.generate_response(messages, self.manifest, self.config.verbose):
+                yield role, res, function_call
+            # role, res, function_call
+        else:
+            raise NotImplementedError
 
         if role and res:
             self.append_message(role, res, False)
 
-        return (res, function_call, token_usage)
+        yield res, function_call
 
     def call_loop(self, callback: Callable[[str, tuple[str, dict]], None], runtime: PythonRuntime = None):
         """

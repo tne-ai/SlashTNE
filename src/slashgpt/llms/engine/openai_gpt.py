@@ -1,18 +1,16 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, AsyncGenerator
 
 import openai
 from asyncer import asyncify  # For async OpenAI call
 import tiktoken  # for counting tokens
-from openai import OpenAI
 
 from slashgpt.function.function_call import FunctionCall
 from slashgpt.llms.engine.base import LLMEngineBase
 from slashgpt.utils.print import print_debug, print_error
 
-from aiohttp import ClientSession
 
 if TYPE_CHECKING:
     from slashgpt.llms.model import LlmModel
@@ -26,47 +24,53 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         if key == "":
             print_error("OPENAI_API_KEY environment variable is missing from .env")
             sys.exit()
-        self.client = OpenAI(api_key=key)
+        openai.api_key = key
 
         # Override default openai endpoint for custom-hosted models
         api_base = llm_model.get_api_base()
         if api_base:
-            self.client.base_url = api_base
+            openai.api_base = api_base
 
         return
 
-    async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool):
+    async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool) -> AsyncGenerator:
         model_name = self.llm_model.name()
         temperature = manifest.temperature()
         functions = manifest.functions()
         stream = manifest.stream()
         num_completions = manifest.num_completions()
         max_tokens = manifest.max_tokens()
-        # LATER: logprobs is invalid with ChatCompletion API
-        # logprobs = manifest.logprobs()
-        params = dict(model=model_name, messages=messages, temperature=temperature, stream=stream, n=num_completions, max_tokens=max_tokens)
+
+        params = {
+            "model": model_name,
+            "messages": messages,
+            "temperature": temperature,
+            "stream": stream,
+            "n": num_completions,
+            "max_tokens": max_tokens,
+        }
         if functions:
             params["functions"] = functions
-            if manifest.get("function_call"):
-                params["function_call"] = dict(name=manifest.get("function_call"))
-        response = openai.ChatCompletion.acreate(**params)
-        token_usage = response.usage.total_tokens
 
-        if verbose:
-            print_debug(f"model={dict(response)['model']}")
-            print_debug(f"usage={dict(response)['usage']}")
-        answer = response.choices[0].message
-        res = answer.content
-        role = answer.role
+        if not stream:
+            # Make a non-streaming API call
+            response = await asyncify(openai.ChatCompletion.create)(**params)
+            answer = response["choices"][0]["message"]
+            res = answer["content"]
+            role = answer["role"]
 
-        function_call = None
-        if functions is not None and answer.function_call is not None:
-            function_call = FunctionCall(answer.function_call, manifest)
+            function_call = None
+            if functions is not None and answer.get("function_call") is not None:
+                function_call = FunctionCall(answer.get("function_call"), manifest)
 
-            if res and function_call is None:
-                function_call = self._extract_function_call(messages[-1], manifest, res, True)
+                if res and function_call is None:
+                    function_call = self._extract_function_call(messages[-1], manifest, res, True)
 
-        return (role, res, function_call, token_usage)
+            yield role, res, function_call
+        else:
+            async for response in openai.ChatCompletion.create(**params):
+                for item in await self._process_response(response, functions, manifest, messages):
+                    yield item
 
     def __num_tokens(self, text: str):
         model_name = self.llm_model.name()
