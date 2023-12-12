@@ -171,14 +171,12 @@ class ChatSession:
         if self.manifest.stream() is False:
             async for role, res, function_call, token_usage in self.llm_model.generate_response(messages, self.manifest, self.config.verbose):
                 yield role, res, function_call
+            if role and res:
+                self.append_message(role, res, False)
+            yield res, function_call
         else:
             async for message in self.llm_model.generate_response(messages, self.manifest, self.config.verbose):
                 yield message
-
-        if role and res:
-            self.append_message(role, res, False)
-
-        yield res, function_call
 
     def call_loop(self, callback: Callable[[str, tuple[str, dict]], None], runtime: PythonRuntime = None):
         """
