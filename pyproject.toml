@@ -22,7 +22,7 @@ include = ["manifests/*", "manifests/*/*", "test/*", "resources/*/*",  "data/*"]
 
 [tool.poetry.dependencies]
 python = "<3.13,>=3.9"
-openai = "^0.28.0"
+openai = "1.4.0"
 python-dotenv = "1.0.0"
 pinecone-client = "^2.2.2"
 google-generativeai = "^0.1.0"
