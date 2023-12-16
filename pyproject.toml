@@ -22,7 +22,7 @@ include = ["manifests/*", "manifests/*/*", "test/*", "resources/*/*",  "data/*",
 
 [tool.poetry.dependencies]
 python = "<3.13,>=3.9"
-openai = "^1.2.0"
+openai = "1.4.0"
 python-dotenv = "1.0.0"
 termcolor = "^2.3.0"
 bs4 = "^0.0.1"
