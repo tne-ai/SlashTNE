@@ -3,8 +3,7 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING, List, AsyncGenerator
 
-import openai
-from asyncer import asyncify  # For async OpenAI call
+from openai import AsyncOpenAI
 import tiktoken  # for counting tokens
 
 from slashgpt.function.function_call import FunctionCall
@@ -24,12 +23,13 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         if key == "":
             print_error("OPENAI_API_KEY environment variable is missing from .env")
             sys.exit()
-        openai.api_key = key
+
+        self.client = AsyncOpenAI(api_key=key)
 
         # Override default openai endpoint for custom-hosted models
         api_base = llm_model.get_api_base()
         if api_base:
-            openai.api_base = api_base
+            self.client.api_base = api_base
 
         return
 
@@ -54,10 +54,10 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
         if not stream:
             # Make a non-streaming API call
-            response = await asyncify(openai.ChatCompletion.create)(**params)
-            answer = response["choices"][0]["message"]
-            res = answer["content"]
-            role = answer["role"]
+            response = await self.client.completions.create(**params)
+            answer = response.choices[0].message
+            res = answer.content
+            role = answer.role
 
             function_call = None
             if functions is not None and answer.get("function_call") is not None:
@@ -68,15 +68,16 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
             yield role, res, function_call
         else:
-            collected_chunks = []
-            collected_messages = []
             # TODO(lucas): Support streaming and function calls (this only processes the text)
-            for chunk in openai.ChatCompletion.create(**params):
-                collected_chunks.append(chunk)
-                chunk_message = chunk["choices"][0]["delta"]
-                collected_messages.append(chunk_message)
-                if chunk_message.get("content"):
-                    yield chunk_message.get("content")
+            stream_keys = ["model", "stream", "messages"]
+            stream_params = {k: params[k] for k in stream_keys}
+
+            stream = self.client.chat.completions.create(**stream_params)
+
+            async for chunk in await stream:
+                message = chunk.choices[0].delta.content
+                if message:
+                    yield message
 
     def __num_tokens(self, text: str):
         model_name = self.llm_model.name()
