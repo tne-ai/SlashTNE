@@ -58,7 +58,8 @@ class ChatConfigWithManifests(ChatConfig):
         if "Contents" in response:
             for obj in response["Contents"]:
                 file_name = obj["Key"]
-                if file_name.endswith(".json") or file_name.endswith(".yml") or file_name.endswith(".yaml"):
+                # TNE naming convention - manifests have .model extension
+                if file_name.endswith(".json") or file_name.endswith(".yml") or file_name.endswith(".yaml") or file_name.endswith(".model"):
                     # Get the object from S3
                     file_obj = s3.get_object(Bucket=bucket_name, Key=file_name)
                     # Read the file content
@@ -67,7 +68,7 @@ class ChatConfigWithManifests(ChatConfig):
                     # Determine the file type and load accordingly
                     if file_name.endswith(".json"):
                         manifests[file_name.split("/")[-1].split(".")[0]] = json.loads(file_content)
-                    elif file_name.endswith(".yml") or file_name.endswith(".yaml"):
+                    elif file_name.endswith(".yml") or file_name.endswith(".yaml") or file_name.endswith(".model"):
                         manifests[file_name.split("/")[-1].split(".")[0]] = yaml.safe_load(file_content)
 
         return manifests
