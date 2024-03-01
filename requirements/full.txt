@@ -1,12 +1,13 @@
-openai==1.4.0
+openai==1.3.5
 python-dotenv==1.0.0
+pinecone-client
+google-generativeai
 termcolor
 bs4
 tiktoken
-pyyaml
 gTTS
 playsound
-pyobjc; sys_platform == 'darwin'
+pyobjc; sys_platform == 'darwin' 
 IPython
 matplotlib
 numpy
@@ -27,5 +28,3 @@ flask
 psycopg2-binary
 pgvector
 chromadb
-asyncer
-boto3

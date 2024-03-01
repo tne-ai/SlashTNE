@@ -1,8 +1,9 @@
 import json
 import os
+import re
 from urllib.parse import quote_plus, urlparse
 
-from slashgpt.function.network import graphQLRequest, http_request
+from slashgpt.function.network import graphQLRequest, http_request, isLoadedGQL
 from slashgpt.utils.print import print_debug, print_error, print_function
 from slashgpt.utils.utils import CallType
 
@@ -40,6 +41,10 @@ class FunctionAction:
 
         def format(value):
             if isinstance(value, str):
+                match = re.search(r"^{([a-zA-Z_]+)\}$", value)
+                # if the value has a shape like "{prop_name}", get that property as-is
+                if match:
+                    return arguments.get(match.group(1))
                 return value.format(**arguments)
             elif isinstance(value, dict):
                 return {x: format(value.get(x)) for x in value}
@@ -63,6 +68,9 @@ class FunctionAction:
                 verbose,
             )
         if type == CallType.GRAPHQL:
+            if not isLoadedGQL:
+                print_error("no GraphQL module. pip install gql")
+                return None
             appkey_value = self.__get_appkey_value() or ""
             return graphQLRequest(
                 url=self.__get("url"),

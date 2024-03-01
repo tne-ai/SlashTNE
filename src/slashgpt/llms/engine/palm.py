@@ -1,6 +1,9 @@
 from typing import List
 
-import google.generativeai as palm
+try:
+    import google.generativeai as palm
+except ImportError:
+    print("no google-generativeai. pip install google-generativeai")
 
 from slashgpt.llms.engine.base import LLMEngineBase
 from slashgpt.llms.model import LlmModel
@@ -58,6 +61,6 @@ class LLMEnginePaLM(LLMEngineBase):
 
         role = "assistant"
         if function_call:
-            return (role, None, function_call)
+            return (role, None, function_call, None)
         else:
-            return (role, res, None)
+            return (role, res, None, None)

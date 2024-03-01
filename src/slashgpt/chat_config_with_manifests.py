@@ -7,6 +7,7 @@ from typing import Optional
 import yaml
 
 from slashgpt.chat_config import ChatConfig
+from slashgpt.utils.print import print_error
 
 
 class ChatConfigWithManifests(ChatConfig):
@@ -43,10 +44,40 @@ class ChatConfigWithManifests(ChatConfig):
         for file in files:
             if re.search(r"\.json$", file):
                 with open(f"{path}/{file}", "r", encoding="utf-8") as f:  # encoding add for Win
-                    manifests[file.split(".")[0]] = json.load(f)
+                    try:
+                        manifests[file.split(".")[0]] = json.load(f)
+                    except json.JSONDecodeError:
+                        print_error(file + " is broken")
             elif re.search(r"\.yml$", file):
                 with open(f"{path}/{file}", "r", encoding="utf-8") as f:  # encoding add for Win
-                    manifests[file.split(".")[0]] = yaml.safe_load(f)
+                    try:
+                        manifests[file.split(".")[0]] = yaml.safe_load(f)
+                    except Exception:
+                        print_error(file + " is broken")
+        return manifests
+
+    def load_manifests_s3(self, bucket_name: str, prefix: str):
+        s3 = boto3.client("s3")
+        manifests = {}
+
+        # List objects within the specified bucket and prefix
+        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+        if "Contents" in response:
+            for obj in response["Contents"]:
+                file_name = obj["Key"]
+                # TNE naming convention - manifests have .model extension
+                if file_name.endswith(".json") or file_name.endswith(".yml") or file_name.endswith(".yaml") or file_name.endswith(".model"):
+                    # Get the object from S3
+                    file_obj = s3.get_object(Bucket=bucket_name, Key=file_name)
+                    # Read the file content
+                    file_content = file_obj["Body"].read().decode("utf-8")
+
+                    # Determine the file type and load accordingly
+                    if file_name.endswith(".json"):
+                        manifests[file_name.split("/")[-1].split(".")[0]] = json.loads(file_content)
+                    elif file_name.endswith(".yml") or file_name.endswith(".yaml") or file_name.endswith(".model"):
+                        manifests[file_name.split("/")[-1].split(".")[0]] = yaml.safe_load(file_content)
+
         return manifests
 
     def load_manifests_s3(self, bucket_name: str, prefix: str):

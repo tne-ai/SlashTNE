@@ -65,6 +65,8 @@ class ChatSession:
         self.set_llm_model(llm_model)
 
         # Load the prompt, fill variables and append it as the system message
+        if self.config.verbose and memory is not None:
+            print_debug(f"memory = {memory}")
         self.prompt: str = self.manifest.prompt_data(config.manifests if hasattr(config, "manifests") else {}, memory)
         """Prompt for the AI agent (str)"""
 
@@ -165,9 +167,9 @@ class ChatSession:
             function_call (dict): json representing the function call (optional)
         """
         messages = self.history.messages()
-        res, role, function_call = None, None, None
+        res, role, function_call, token_usage = None, None, None, None
         if self.manifest.stream() is False:
-            async for role, res, function_call in self.llm_model.generate_response(messages, self.manifest, self.config.verbose):
+            async for role, res, function_call, token_usage in self.llm_model.generate_response(messages, self.manifest, self.config.verbose):
                 yield role, res, function_call
             if role and res:
                 self.append_message(role, res, False)
@@ -181,7 +183,7 @@ class ChatSession:
         Calls the LLM and process the response (functions calls).
         It may call itself recursively if ncessary.
         """
-        (res, function_call) = self.call_llm()
+        (res, function_call, _) = self.call_llm()
 
         if res:
             callback("bot", res)

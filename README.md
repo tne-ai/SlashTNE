@@ -21,7 +21,10 @@ Here are the design goals:
 ## Initialization for developer
 
 1. Install the required packages:
+  - If you want to use all the functions, install this.
+    `pip install -r requirements/full.txt`
 
+  - If you want to use only the general features, install this
     `pip install -r requirements.txt`
 
 2. Create .env file, and specify your OpenAI key as follows:
@@ -45,6 +48,10 @@ Here are the design goals:
 ```
 pdoc src/slashgpt
 ```
+
+or
+
+https://snakajima.github.io/SlashGPT/
 
 ## Execution
 
@@ -119,6 +126,7 @@ Create a new manifest file, {agent_name}.json/yml in "manifests" folder with fol
   - *name* (string, optional): index name of the embedding vector database
 - *resource* (string, optional): location of the resource file. Use {resource} to paste it into the prompt
 - *functions* (string or list, optional): string - location of the function definitions, list - function definitions
+- *function_call* (string, optional): the name of tne function LLM should call
 - *module* (string, optional): location of the Python script to be loaded for function calls
 - *actions* (object, optional): Template-based function processor (see details below)
 
