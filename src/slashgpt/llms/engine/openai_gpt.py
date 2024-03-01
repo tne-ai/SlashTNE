@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING, List, AsyncGenerator
 
-from openai import AsyncOpenAI
+from openai import OpenAI, AsyncOpenAI
 import tiktoken  # for counting tokens
 
 from slashgpt.function.function_call import FunctionCall
@@ -24,14 +24,30 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
             print_error("OPENAI_API_KEY environment variable is missing from .env")
             sys.exit()
 
-        self.client = AsyncOpenAI(api_key=key)
+        self.client = OpenAI(api_key=key)
+        self.async_client = AsyncOpenAI(api_key=key)
 
         # Override default openai endpoint for custom-hosted models
         api_base = llm_model.get_api_base()
         if api_base:
-            self.client.api_base = api_base
+            self.async_client.api_base = api_base
 
         return
+
+    def image_completion(self, messages: List[dict], manifest: Manifest, verbose: bool) -> string:
+        params = {
+            "model": manifest.model().get("model_name"),
+            "prompt": f"I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS\n{messages}",
+            "size": "1024x1792",
+            "quality": "standard",
+            "n": 1,
+        }
+        response = self.client.images.generate(**params)
+        if response:
+            image_url = response.data[0].url
+            return image_url
+
+        return None
 
     async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool) -> AsyncGenerator:
         model_name = self.llm_model.name()
@@ -54,7 +70,10 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
         if not stream:
             # Make a non-streaming API call
-            response = await self.client.completions.create(**params)
+            if model_name == "dall-e-3":
+                response = self.async_client.images.generate(**params)
+            else:
+                response = await self.async_client.completions.create(**params)
             answer = response.choices[0].message
             res = answer.content
             role = answer.role
@@ -72,7 +91,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
             stream_keys = ["model", "stream", "messages"]
             stream_params = {k: params[k] for k in stream_keys}
 
-            stream = self.client.chat.completions.create(**stream_params)
+            stream = self.async_client.chat.completions.create(**stream_params)
 
             async for chunk in await stream:
                 message = chunk.choices[0].delta.content

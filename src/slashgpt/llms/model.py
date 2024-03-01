@@ -96,6 +96,9 @@ class LlmModel:
             async for role, res, function_call in self.engine.chat_completion(messages, manifest, verbose):
                 yield role, res, function_call
         else:
+            if manifest.get("model").get("model_name") == "dall-e-3":
+                img_url = self.engine.image_completion(messages, manifest, verbose)
+                yield img_url
             async for message in self.engine.chat_completion(messages, manifest, verbose):
                 yield message
 
