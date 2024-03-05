@@ -60,19 +60,14 @@ class ChatConfigWithManifests(ChatConfig):
         s3 = boto3.client("s3")
         manifests = {}
 
-        # List objects within the specified bucket and prefix
         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
         if "Contents" in response:
             for obj in response["Contents"]:
                 file_name = obj["Key"]
-                # TNE naming convention - manifests have .model extension
                 if file_name.endswith(".json") or file_name.endswith(".yml") or file_name.endswith(".yaml") or file_name.endswith(".model"):
-                    # Get the object from S3
                     file_obj = s3.get_object(Bucket=bucket_name, Key=file_name)
-                    # Read the file content
                     file_content = file_obj["Body"].read().decode("utf-8")
 
-                    # Determine the file type and load accordingly
                     if file_name.endswith(".json"):
                         manifests[file_name.split("/")[-1].split(".")[0]] = json.loads(file_content)
                     elif file_name.endswith(".yml") or file_name.endswith(".yaml") or file_name.endswith(".model"):

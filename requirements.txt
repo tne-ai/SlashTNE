@@ -29,3 +29,4 @@ pgvector
 chromadb
 asyncer
 boto3
+anthropic
