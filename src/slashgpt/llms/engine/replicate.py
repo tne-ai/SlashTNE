@@ -41,16 +41,7 @@ class LLMEngineReplicate(LLMEngineBase):
             "prompt": prompt,
             "system_prompt": system_prompt,
             "temperature": temperature,
+            "max_new_tokens": 4096
         }
         async for event in await replicate.async_stream(replicate_model, input=replicate_input):
             yield str(event)
-
-        """
-        function_call = self._extract_function_call(messages[-1], manifest, res) if manifest.functions() is not None else None
-
-        role = "assistant"
-        if function_call:
-            yield (role, None, function_call, None)
-        else:
-            yield (role, res, None, None)
-        """
