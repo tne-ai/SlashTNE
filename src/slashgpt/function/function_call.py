@@ -112,8 +112,7 @@ class FunctionCall:
         if function_message:
             history.append_message({"role": "function", "content": function_message, "name": function_name})
 
-        should_call_llm = (not self.__manifest.skip_function_result()) and function_message
-        return (function_message, function_name, should_call_llm)
+        return (function_message, function_name)
 
     def __format_python_result(self, result: Union[dict, str]):
         if isinstance(result, dict):

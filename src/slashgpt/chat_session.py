@@ -6,10 +6,12 @@ from typing import Callable, List, Optional, AsyncGenerator
 from slashgpt.chat_config import ChatConfig
 from slashgpt.chat_history import ChatHistory
 from slashgpt.dbs.db_base import VectorDBBase
+from slashgpt.function.function_call import FunctionCall
 from slashgpt.function.jupyter_runtime import PythonRuntime
 from slashgpt.history.storage.abstract import ChatHistoryAbstractStorage
 from slashgpt.history.storage.memory import ChatHistoryMemoryStorage
 from slashgpt.llms.model import LlmModel
+
 from slashgpt.manifest import Manifest
 from slashgpt.utils.print import print_debug, print_error, print_info
 
@@ -167,26 +169,29 @@ class ChatSession:
             function_call (dict): json representing the function call (optional)
         """
         messages = self.history.messages()
-        res, role, function_call, token_usage = None, None, None, None
         if self.manifest.stream() is False:
-            async for role, res, function_call, token_usage in self.llm_model.generate_response(messages, self.manifest, self.config.verbose):
-                yield role, res, function_call
-            if role and res:
-                self.append_message(role, res, False)
-            yield res, function_call
-        else:
             async for message in self.llm_model.generate_response(messages, self.manifest, self.config.verbose):
                 yield message
+        else:
+            collected_messages = []
+            async for message in self.llm_model.generate_response(messages, self.manifest, self.config.verbose):
+                collected_messages.append(messages)
+                yield message
 
-    def call_loop(self, callback: Callable[[str, tuple[str, dict]], None], runtime: PythonRuntime = None):
+    async def call_loop(self, callback: Callable[[str, tuple[str, dict]], None], runtime: PythonRuntime = None) -> AsyncGenerator:
         """
         Calls the LLM and process the response (functions calls).
-        It may call itself recursively if ncessary.
+        It may call itself recursively if necessary.
         """
-        (res, function_call, _) = self.call_llm()
-
-        if res:
-            callback("bot", res)
+        function_call = None
+        collected_messages = []
+        async for message in self.call_llm():
+            if type(message) is str:
+                collected_messages.append(message)
+                yield message
+            elif type(message) is FunctionCall:
+                function_call = message
+                break
 
         if function_call:
             # Check if this function needs to be processed by the application (emit style)
@@ -199,14 +204,13 @@ class ChatSession:
                 (
                     function_message,
                     function_name,
-                    should_call_llm,
                 ) = function_call.process_function_call(
                     self.history,
                     runtime,
                     self.config.verbose,
                 )
+
                 if function_message:
                     callback("function", (function_name, function_message))
 
-                if should_call_llm:
-                    self.call_loop(callback, runtime)
+                self.call_loop(callback, runtime)

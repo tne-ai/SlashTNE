@@ -56,6 +56,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         stream = manifest.stream()
         num_completions = manifest.num_completions()
         max_tokens = manifest.max_tokens()
+        functions = manifest.functions()
 
         params = {
             "model": model_name,
@@ -65,27 +66,29 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
             "n": num_completions,
             "max_tokens": max_tokens,
         }
-        if functions:
-            params["functions"] = functions
 
         if not stream:
             # Make a non-streaming API call
             if model_name == "dall-e-3":
                 response = self.async_client.images.generate(**params)
             else:
-                response = await self.async_client.completions.create(**params)
+                if functions:
+                    tools_list = []
+                    for function in functions:
+                        tools_list.append({"type": "function", "function": function})
+                    params.update({"tools": tools_list, "tool_choice": "auto"})
+                response = await self.async_client.chat.completions.create(**params)
+
             answer = response.choices[0].message
+
             res = answer.content
-            role = answer.role
 
-            function_call = None
-            if functions is not None and answer.get("function_call") is not None:
-                function_call = FunctionCall(answer.get("function_call"), manifest)
+            if answer.tool_calls:
+                function_call = FunctionCall(answer.tool_calls[0].function, manifest)
+                yield function_call
+            else:
+                yield res
 
-                if res and function_call is None:
-                    function_call = self._extract_function_call(messages[-1], manifest, res, True)
-
-            yield role, res, function_call
         else:
             # TODO(lucas): Support streaming and function calls (this only processes the text)
             stream_keys = ["model", "stream", "messages"]
@@ -93,9 +96,14 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
             stream = self.async_client.chat.completions.create(**stream_params)
 
+            collected_messages = []
             async for chunk in await stream:
                 message = chunk.choices[0].delta.content
+                function_call = chunk.choices[0].delta.tool_calls
+                if function_call:
+                    yield function_call
                 if message:
+                    collected_messages.append(message)
                     yield message
 
     def __num_tokens(self, text: str):

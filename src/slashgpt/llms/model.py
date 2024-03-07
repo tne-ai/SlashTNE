@@ -93,14 +93,22 @@ class LlmModel:
             verbose (bool): True if it's in verbose mode.
         """
         if manifest.stream() is False:
-            async for role, res, function_call in self.engine.chat_completion(messages, manifest, verbose):
-                yield role, res, function_call
-        else:
-            if manifest.get("model").get("model_name") == "dall-e-3":
-                img_url = self.engine.image_completion(messages, manifest, verbose)
-                yield img_url
             async for message in self.engine.chat_completion(messages, manifest, verbose):
                 yield message
+        else:
+            # Regular chat completion
+            if manifest.get("model"):
+                if manifest.get("model").get("model_name") == "dall-e-3":
+                    img_url = self.engine.image_completion(messages, manifest, verbose)
+                    yield img_url
+                else:
+                    async for message in self.engine.chat_completion(messages, manifest, verbose):
+                        yield message
+            else:
+                collected_messages = []
+                async for message in self.engine.chat_completion(messages, manifest, verbose):
+                    collected_messages.append(message)
+                    yield message
 
     def num_tokens(self, text: str):
         return self.engine.num_tokens(text)
