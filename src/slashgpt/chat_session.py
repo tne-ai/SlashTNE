@@ -210,6 +210,8 @@ class ChatSession:
                     self.config.verbose,
                 )
 
+                # We've made the function API call, now can stream the rest of the LLM work
+                self.manifest._Manifest__manifest["stream"] = True  # TODO: better method of changing stream setting
                 if function_message:
                     callback("function", (function_name, function_message))
 

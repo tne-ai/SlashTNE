@@ -37,6 +37,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
     def image_completion(self, messages: List[dict], manifest: Manifest, verbose: bool) -> string:
         params = {
             "model": manifest.model().get("model_name"),
+            # Prompt taken from the OpenAI guide
             "prompt": f"I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS\n{messages}",
             "size": "1024x1792",
             "quality": "standard",
