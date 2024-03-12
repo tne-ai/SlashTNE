@@ -3,14 +3,15 @@ from slashgpt.llms.engine.openai_gpt import LLMEngineOpenAIGPT
 from slashgpt.llms.engine.openai_legacy import LLMEngineOpenAILegacy
 from slashgpt.llms.engine.replicate import LLMEngineReplicate
 from slashgpt.llms.engine.anthropic_engine import LLMEngineAnthropic
+from slashgpt.llms.engine.google import LLMEngineGoogle
 
 default_llm_engine_configs = {
     "openai-gpt": LLMEngineOpenAIGPT,
     "openai-legacy": LLMEngineOpenAILegacy,
     "replicate": LLMEngineReplicate,
-    # "palm": LLMEnginePaLM,
     "hosted": LLMEngineHosted,
     "anthropic_engine": LLMEngineAnthropic,
+    "google": LLMEngineGoogle,
 }
 
 default_llm_models = {

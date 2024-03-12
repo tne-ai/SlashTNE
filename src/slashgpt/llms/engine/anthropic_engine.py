@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING, List, AsyncGenerator
 from anthropic import AsyncAnthropic
 import tiktoken  # for counting tokens
 
-from slashgpt.function.function_call import FunctionCall
 from slashgpt.llms.engine.base import LLMEngineBase
-from slashgpt.utils.print import print_debug, print_error
+from slashgpt.utils.print import print_error
 
 
 if TYPE_CHECKING:
