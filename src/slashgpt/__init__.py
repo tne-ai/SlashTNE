@@ -23,13 +23,13 @@ from .history.storage.file import ChatHistoryFileStorage
 # from .history.storage.log import *
 from .history.storage.memory import ChatHistoryMemoryStorage
 
-# from .llms.default_config import *
 from .llms.engine.base import LLMEngineBase
 from .llms.engine.hosted import LLMEngineHosted
 from .llms.engine.openai_gpt import LLMEngineOpenAIGPT
 from .llms.engine.openai_legacy import LLMEngineOpenAILegacy
-from .llms.engine.palm import LLMEnginePaLM
 from .llms.engine.replicate import LLMEngineReplicate
+from .llms.engine.google import LLMEngineGoogle
+from .llms.engine.anthropic_engine import LLMEngineAnthropic
 from .llms.model import LlmModel
 from .manifest import Manifest
 from .slashbot import run_bot
@@ -68,7 +68,6 @@ __all__ = [
     "LLMEngineHosted",
     "LLMEngineOpenAIGPT",
     "LLMEngineOpenAILegacy",
-    "LLMEnginePaLM",
     "LLMEngineReplicate",
     "LlmModel",
     "Manifest",

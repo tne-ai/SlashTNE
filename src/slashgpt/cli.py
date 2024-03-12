@@ -5,19 +5,19 @@ import json
 import os
 import sys
 
-from slashgpt.llms.engine.palm import LLMEnginePaLM
+from slashgpt.llms.engine.google import LLMEngineGoogle
 from slashgpt.SlashGPT import ChatSlashConfig, SlashGPT
 from slashgpt.utils.help import ONELINE_HELP
 
 my_llm_engine_configs = {
-    "palm": LLMEnginePaLM,
+    "palm": LLMEngineGoogle,
 }
 
 my_llm_models = {
     "palm": {
-        "engine_name": "palm",
-        "model_name": "palm",
-        "api_key": "GOOGLE_PALM_KEY",
+        "engine_name": "google",
+        "model_name": "gemini-pro",
+        "api_key": "GEMINI_API_KEY",
     },
 }
 

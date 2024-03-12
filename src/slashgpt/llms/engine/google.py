@@ -27,16 +27,16 @@ class LLMEngineGoogle(LLMEngineBase):
 
     async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool) -> AsyncGenerator:
         # Parse the format to account for Anthropic API format
-        system_prompt = None
-        processed_messages = []
-        for message in messages:
-            if message.get("role") == "system":
-                message["role"] = "user"
-            processed_messages.append(message)
+        message = {"role": "user"}
+        content = ""
+        for m in messages:
+            msg_content = m["content"]
+            content += msg_content
+        message["parts"] = [content]
 
         config = genai.types.GenerationConfig(candidate_count=1, max_output_tokens=4096)
-        params = {"messages": messages, "generation_config": config, "stream": True}
+        params = {"generation_config": config, "stream": True}
 
-        async with self.model.generate_content_async(**params) as stream:
-            async for chunk in stream:
-                yield chunk.text
+        response = await self.model.generate_content_async(message, **params)
+        async for chunk in response:
+            yield chunk.text
