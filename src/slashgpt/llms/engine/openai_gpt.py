@@ -57,16 +57,35 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         stream = manifest.stream()
         num_completions = manifest.num_completions()
         max_tokens = manifest.max_tokens()
-        functions = manifest.functions()
 
-        params = {
-            "model": model_name,
-            "messages": messages,
-            "temperature": temperature,
-            "stream": stream,
-            "n": num_completions,
-            "max_tokens": max_tokens,
-        }
+        # TODO: parse each message to see if it contains an image URL
+        if model_name == "gpt-4-vision-preview":
+            img_text_content = {"type": "text"}
+            img_url_content = {"type": "image_url"}
+            for message in messages:
+                # System prompt becomes text input to the model
+                if message.get("role") == "system":
+                    img_text_content["text"] = message.get("content")
+                # Now we extract the image url from the user content
+                elif message.get("role") == "user":
+                    url_ind = message.get("content").find("https://")
+                    if url_ind >= 0:
+                        img_url = message.get("content")[url_ind:].split(" ")[0]
+                        # TODO(lucas): Expose detail parameter in manifest
+                        img_url_content["image_url"] = {"url": img_url, "detail": "low"}
+                    else:
+                        raise ValueError("No image URL detected")
+            messages = [{"role": "user", "content": [img_text_content, img_url_content]}]
+            params = {"model": model_name, "messages": messages, "stream": stream, "max_tokens": max_tokens}
+        else:
+            params = {
+                "model": model_name,
+                "messages": messages,
+                "temperature": temperature,
+                "stream": stream,
+                "n": num_completions,
+                "max_tokens": max_tokens,
+            }
 
         if not stream:
             # Make a non-streaming API call
@@ -92,7 +111,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
         else:
             # TODO(lucas): Support streaming and function calls (this only processes the text)
-            stream_keys = ["model", "stream", "messages"]
+            stream_keys = ["model", "stream", "messages", "max_tokens"]
             stream_params = {k: params[k] for k in stream_keys}
 
             stream = self.async_client.chat.completions.create(**stream_params)
