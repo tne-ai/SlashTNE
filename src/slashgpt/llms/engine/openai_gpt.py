@@ -56,7 +56,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         functions = manifest.functions()
         stream = manifest.stream()
         num_completions = manifest.num_completions()
-        max_tokens = manifest.max_tokens()
+        # max_tokens = manifest.max_tokens()
 
         # TODO: parse each message to see if it contains an image URL
         if model_name == "gpt-4-vision-preview":
@@ -76,7 +76,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
                     else:
                         raise ValueError("No image URL detected")
             messages = [{"role": "user", "content": [img_text_content, img_url_content]}]
-            params = {"model": model_name, "messages": messages, "stream": stream, "max_tokens": max_tokens}
+            params = {"model": model_name, "messages": messages, "stream": stream}
         else:
             params = {
                 "model": model_name,
@@ -84,7 +84,6 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
                 "temperature": temperature,
                 "stream": stream,
                 "n": num_completions,
-                "max_tokens": max_tokens,
             }
 
         if not stream:
@@ -111,7 +110,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
         else:
             # TODO(lucas): Support streaming and function calls (this only processes the text)
-            stream_keys = ["model", "stream", "messages", "max_tokens"]
+            stream_keys = ["model", "stream", "messages"]
             stream_params = {k: params[k] for k in stream_keys}
 
             stream = self.async_client.chat.completions.create(**stream_params)
