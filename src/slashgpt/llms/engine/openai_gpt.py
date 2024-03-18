@@ -56,26 +56,41 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         functions = manifest.functions()
         stream = manifest.stream()
         num_completions = manifest.num_completions()
+        images = manifest.images()
         # max_tokens = manifest.max_tokens()
 
         # TODO: parse each message to see if it contains an image URL
+        content = []
         if model_name == "gpt-4-vision-preview":
+            detected_img = False
             img_text_content = {"type": "text"}
-            img_url_content = {"type": "image_url"}
+
+            # First parse the messages to see if there are any image URLs
             for message in messages:
                 # System prompt becomes text input to the model
                 if message.get("role") == "system":
                     img_text_content["text"] = message.get("content")
+                    content.append(img_text_content)
                 # Now we extract the image url from the user content
                 elif message.get("role") == "user":
                     url_ind = message.get("content").find("https://")
                     if url_ind >= 0:
+                        detected_img = True
                         img_url = message.get("content")[url_ind:].split(" ")[0]
                         # TODO(lucas): Expose detail parameter in manifest
-                        img_url_content["image_url"] = {"url": img_url, "detail": "low"}
-                    else:
-                        raise ValueError("No image URL detected")
-            messages = [{"role": "user", "content": [img_text_content, img_url_content]}]
+                        content.append({"type": "image_url", "image_url": {"url": img_url, "detail": "low"}})
+
+            # Next, check if any base64 encoded images have been passed to us
+            if images:
+                detected_img = True
+                for image in images:
+                    img_url = f"data:image/png;base64, {image}"
+                    content.append({"type": "image_url", "image_url": {"url": img_url, "detail": "auto"}})
+
+            if not detected_img:
+                raise ValueError("No images passed into vision model.")
+
+            messages = [{"role": "user", "content": content}]
             params = {"model": model_name, "messages": messages, "stream": stream}
         else:
             params = {
@@ -113,7 +128,10 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
             stream_keys = ["model", "stream", "messages"]
             stream_params = {k: params[k] for k in stream_keys}
 
-            stream = self.async_client.chat.completions.create(**stream_params)
+            if model_name == "gpt-4-vision-preview":
+                stream = self.async_client.chat.completions.create(max_tokens=4096, **stream_params)
+            else:
+                stream = self.async_client.chat.completions.create(**stream_params)
 
             collected_messages = []
             async for chunk in await stream:

@@ -73,6 +73,10 @@ class Manifest:
             return int(self.get("max_tokens"))
         return 1000
 
+    def images(self):
+        if "images" in self.__manifest:
+            return self.get("images")
+
     def logprobs(self):
         """Returns the number of tokens for which the LLM will display log probabilities, with a max of 5 (int)"""
         return self.get("logprobs") or None
