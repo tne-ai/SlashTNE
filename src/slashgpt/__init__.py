@@ -30,6 +30,7 @@ from .llms.engine.openai_legacy import LLMEngineOpenAILegacy
 from .llms.engine.replicate import LLMEngineReplicate
 from .llms.engine.google import LLMEngineGoogle
 from .llms.engine.anthropic_engine import LLMEngineAnthropic
+from .llms.engine.huggingface import LLMEngineHF
 from .llms.model import LlmModel
 from .manifest import Manifest
 from .slashbot import run_bot
