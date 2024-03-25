@@ -51,8 +51,10 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         return None
 
     async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool) -> AsyncGenerator:
+        # For now, we are trying to force as much determinism as possible
+        temperature = 0.00000000001
+        top_p = 0.00000000001
         model_name = self.llm_model.name()
-        temperature = manifest.temperature()
         functions = manifest.functions()
         stream = manifest.stream()
         num_completions = manifest.num_completions()
@@ -91,12 +93,13 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
                 raise ValueError("No images passed into vision model.")
 
             messages = [{"role": "user", "content": content}]
-            params = {"model": model_name, "messages": messages, "stream": stream}
+            params = {"model": model_name, "messages": messages, "stream": stream, "temperature": temperature, "top_p": top_p}
         else:
             params = {
                 "model": model_name,
                 "messages": messages,
                 "temperature": temperature,
+                "top_p": top_p,
                 "stream": stream,
                 "n": num_completions,
             }
@@ -125,7 +128,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
         else:
             # TODO(lucas): Support streaming and function calls (this only processes the text)
-            stream_keys = ["model", "stream", "messages"]
+            stream_keys = ["model", "stream", "messages", "temperature", "top_p"]
             stream_params = {k: params[k] for k in stream_keys}
 
             if model_name == "gpt-4-vision-preview":
