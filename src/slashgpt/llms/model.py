@@ -67,7 +67,10 @@ class LlmModel:
 
     def get_api_base(self):
         """Returns the openai api base url"""
-        return self.get("api_base")
+        if "mistral" in self.name():
+            return "https://openrouter.ai/api/v1"
+        else:
+            return self.get("api_base")
 
     def __get_engine(self, llm_engine_configs: dict):
         class_data = llm_engine_configs.get(self.engine_name())

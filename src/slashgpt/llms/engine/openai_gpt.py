@@ -24,13 +24,13 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
             print_error("OPENAI_API_KEY environment variable is missing from .env")
             sys.exit()
 
-        self.client = OpenAI(api_key=key)
-        self.async_client = AsyncOpenAI(api_key=key)
-
-        # Override default openai endpoint for custom-hosted models
         api_base = llm_model.get_api_base()
         if api_base:
-            self.async_client.api_base = api_base
+            self.client = OpenAI(api_key=key, base_url=api_base)
+            self.async_client = AsyncOpenAI(api_key=key, base_url=api_base)
+        else:
+            self.client = OpenAI(api_key=key)
+            self.async_client = AsyncOpenAI(api_key=key)
 
         return
 
