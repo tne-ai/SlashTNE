@@ -38,6 +38,7 @@ class LLMEngineGroq(LLMEngineBase):
         # For now, we are trying to force as much determinism as possible
         temperature = 0.00000000001
         top_p = 0.00000000001
+        max_tokens = 2048
         model_name = self.llm_model.name()
         functions = manifest.functions()
         stream = manifest.stream()
@@ -54,18 +55,18 @@ class LLMEngineGroq(LLMEngineBase):
             "top_p": top_p,
             "stream": stream,
             "n": num_completions,
+            "max_tokens": max_tokens,
         }
 
-        stream_keys = ["model", "stream", "messages", "temperature", "top_p"]
+        stream_keys = ["model", "stream", "messages", "temperature", "top_p", "max_tokens"]
         stream_params = {k: params[k] for k in stream_keys}
 
         collected_messages = []
-        async with self.async_client.chat.completions.with_streaming_response.create(**stream_params) as stream:
-            async for line in stream.iter_text():
-                json_resp = json.loads(line.split("data: ")[1])
-                text_resp = json_resp["choices"][0]["delta"]["content"]
-                collected_messages.append(text_resp)
-                yield text_resp
+        stream = await self.async_client.chat.completions.create(**stream_params)
+        async for chunk in stream:
+            resp = chunk.choices[0].delta.content
+            collected_messages.append(resp)
+            yield resp
 
     def __num_tokens(self, text: str):
         model_name = self.llm_model.name()
