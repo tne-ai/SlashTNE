@@ -30,3 +30,4 @@ chromadb
 asyncer
 boto3
 anthropic
+groq

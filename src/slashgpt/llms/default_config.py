@@ -5,6 +5,7 @@ from slashgpt.llms.engine.replicate import LLMEngineReplicate
 from slashgpt.llms.engine.anthropic_engine import LLMEngineAnthropic
 from slashgpt.llms.engine.google import LLMEngineGoogle
 from slashgpt.llms.engine.huggingface import LLMEngineHF
+from slashgpt.llms.engine.groq import LLMEngineGroq
 
 default_llm_engine_configs = {
     "openai-gpt": LLMEngineOpenAIGPT,
@@ -14,6 +15,7 @@ default_llm_engine_configs = {
     "anthropic_engine": LLMEngineAnthropic,
     "google": LLMEngineGoogle,
     "hf": LLMEngineHF,
+    "groq": LLMEngineGroq
 }
 
 default_llm_models = {
