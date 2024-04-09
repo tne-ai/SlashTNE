@@ -6,6 +6,9 @@ from typing import TYPE_CHECKING, List, AsyncGenerator
 from openai import OpenAI, AsyncOpenAI
 import tiktoken  # for counting tokens
 
+import base64
+import binascii
+
 from slashgpt.function.function_call import FunctionCall
 from slashgpt.llms.engine.base import LLMEngineBase
 from slashgpt.utils.print import print_debug, print_error
@@ -14,6 +17,39 @@ from slashgpt.utils.print import print_debug, print_error
 if TYPE_CHECKING:
     from slashgpt.llms.model import LlmModel
     from slashgpt.manifest import Manifest
+
+
+# Helper functions for determining image type
+def is_base64_png(s):
+    """Determines if a serialized string represents a base644 encoded PNG"""
+    if type(s) is not str:
+        return False
+
+    try:
+        s += "=" * ((4 - len(s) % 4) % 4)
+        decoded_bytes = base64.b64decode(s, validate=True)
+    except (ValueError, binascii.Error):
+        return False
+
+    # Check for PNG signature
+    png_signature = b"\x89PNG\r\n\x1a\n"
+    return decoded_bytes.startswith(png_signature)
+
+
+def is_base64_jpg(s):
+    """Determines if a serialized string represents a base64 encoded JPEG"""
+    if type(s) is not str:
+        return False
+
+    try:
+        s += "=" * ((4 - len(s) % 4) % 4)  # Ensure padding is correct
+        decoded_bytes = base64.b64decode(s, validate=True)
+    except (ValueError, binascii.Error):
+        return False
+
+    # Check for JPG signature (JPEG files start with FF D8)
+    jpg_signature = b"\xFF\xD8"
+    return decoded_bytes.startswith(jpg_signature)
 
 
 class LLMEngineOpenAIGPT(LLMEngineBase):
@@ -86,7 +122,12 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
             if images:
                 detected_img = True
                 for image in images:
-                    img_url = f"data:image/png;base64, {image}"
+                    if is_base64_png(image):
+                        img_url = f"data:image/png;base64, {image}"
+                    elif is_base64_jpg(image):
+                        img_url = f"data:image/jpg;base64, {image}"
+                    else:
+                        raise NotImplementedError
                     content.append({"type": "image_url", "image_url": {"url": img_url, "detail": "auto"}})
 
             if not detected_img:
