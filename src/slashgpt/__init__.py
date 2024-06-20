@@ -9,7 +9,6 @@ from .chat_history import ChatHistory
 from .chat_session import ChatSession
 from .cli import cli
 from .dbs.db_base import VectorDBBase
-from .dbs.db_chroma import DBChroma
 from .dbs.db_pgvector import DBPgVector
 from .dbs.db_pinecone import DBPinecone
 from .dbs.vector_engine import VectorEngine
