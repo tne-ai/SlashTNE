@@ -67,7 +67,7 @@ class LlmModel:
 
     def get_api_base(self):
         """Returns the openai api base url"""
-        if ":free" in self.name():
+        if ":free" in self.name():  # Hacky detection for OpenRouter
             return "https://openrouter.ai/api/v1"
         else:
             return self.get("api_base")

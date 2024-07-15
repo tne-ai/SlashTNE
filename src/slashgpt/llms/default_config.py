@@ -6,9 +6,11 @@ from slashgpt.llms.engine.anthropic_engine import LLMEngineAnthropic
 from slashgpt.llms.engine.google import LLMEngineGoogle
 from slashgpt.llms.engine.huggingface import LLMEngineHF
 from slashgpt.llms.engine.groq import LLMEngineGroq
+from slashgpt.llms.engine.tne import LLMEngineTNE
 
 default_llm_engine_configs = {
     "openai-gpt": LLMEngineOpenAIGPT,
+    "tne": LLMEngineTNE,
     "openai-legacy": LLMEngineOpenAILegacy,
     "replicate": LLMEngineReplicate,
     "hosted": LLMEngineHosted,

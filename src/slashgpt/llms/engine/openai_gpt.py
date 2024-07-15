@@ -70,7 +70,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
         return
 
-    def image_completion(self, messages: List[dict], manifest: Manifest, verbose: bool) -> string:
+    def image_completion(self, messages: List[dict], manifest: Manifest, verbose: bool) -> str:
         params = {
             "model": manifest.model().get("model_name"),
             # Prompt taken from the OpenAI guide
