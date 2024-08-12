@@ -60,8 +60,7 @@ class LLMEngineTNE(LLMEngineBase):
             print_error("OPENAI_API_KEY environment variable is missing from .env")
             sys.exit()
 
-        # api_base = "http://msgapi-svc.default.svc.cluster.local/v1"
-        api_base = "http://localhost:8001/v1"
+        api_base = "http://chatapi.app.tne.ai/v1"
         self.client = OpenAI(api_key=key, base_url=api_base)
         self.async_client = AsyncOpenAI(api_key=key, base_url=api_base)
 
