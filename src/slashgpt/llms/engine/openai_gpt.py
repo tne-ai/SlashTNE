@@ -95,6 +95,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         stream = manifest.stream()
         num_completions = manifest.num_completions()
         images = manifest.images()
+        seed = "95658577"
         # max_tokens = manifest.max_tokens()
 
         # TODO: parse each message to see if it contains an image URL
@@ -140,6 +141,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
                 "model": model_name,
                 "messages": messages,
                 "temperature": temperature,
+                "seed": seed,
                 "top_p": top_p,
                 "stream": stream,
                 "n": num_completions,
