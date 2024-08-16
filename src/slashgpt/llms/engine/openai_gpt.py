@@ -93,7 +93,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         stream = manifest.stream()
         num_completions = manifest.num_completions()
         images = manifest.images()
-        seed = 95658577
+        seed = manifest.manifest().get("seed")
         top_p = 0.00000000000001
         # max_tokens = manifest.max_tokens()
 
