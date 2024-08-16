@@ -88,14 +88,13 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
     async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool) -> AsyncGenerator:
         # For now, we are trying to force as much determinism as possible
-        temperature = 0.00000000001
-        top_p = 0.00000000001
         model_name = self.llm_model.name()
         functions = manifest.functions()
         stream = manifest.stream()
         num_completions = manifest.num_completions()
         images = manifest.images()
-        seed = "95658577"
+        seed = 95658577
+        top_p = 0.00000000000001
         # max_tokens = manifest.max_tokens()
 
         # TODO: parse each message to see if it contains an image URL
@@ -135,14 +134,13 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
                 raise ValueError("No images passed into vision model.")
 
             messages = [{"role": "user", "content": content}]
-            params = {"model": model_name, "messages": messages, "stream": stream, "temperature": temperature, "top_p": top_p}
+            params = {"model": model_name, "messages": messages, "stream": stream, "top_p": top_p}
         else:
             params = {
                 "model": model_name,
                 "messages": messages,
-                "temperature": temperature,
-                "seed": seed,
                 "top_p": top_p,
+                "seed": seed,
                 "stream": stream,
                 "n": num_completions,
             }
@@ -171,7 +169,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
         else:
             # TODO(lucas): Support streaming and function calls (this only processes the text)
-            stream_keys = ["model", "stream", "messages", "temperature", "top_p"]
+            stream_keys = ["model", "stream", "messages", "top_p", "seed"]
             stream_params = {k: params[k] for k in stream_keys}
 
             if model_name == "gpt-4-vision-preview":
