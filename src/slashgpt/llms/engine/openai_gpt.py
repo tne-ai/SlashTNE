@@ -99,6 +99,15 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
 
         # TODO: parse each message to see if it contains an image URL
         content = []
+        # GPT-o1* models do not support system role
+        if "o1-" in model_name:
+            sanitized_messages = []
+            for message in messages:
+                sanitized_messages.append({"role": "user", "content": message.get("content")})
+            messages = sanitized_messages
+            # While in beta, some parameters are not supported
+            top_p = 1
+            stream = False
         if model_name == "gpt-4-vision-preview":
             detected_img = False
             img_text_content = {"type": "text"}
