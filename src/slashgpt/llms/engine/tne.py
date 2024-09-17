@@ -68,13 +68,13 @@ class LLMEngineTNE(LLMEngineBase):
 
     async def chat_completion(self, messages: List[dict], manifest: Manifest, verbose: bool) -> AsyncGenerator:
         model_name = self.llm_model.name()
-        temperature = 0.00000000000000001  # Small, nonzero number for determinism
+        temperature = 0
 
         stream_response = await self.async_client.chat.completions.create(
             model=model_name,
             messages=messages,
             stream=True,
-            max_tokens=99999,
+            max_tokens=4096,
             temperature=temperature,
         )
 
