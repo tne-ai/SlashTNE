@@ -70,11 +70,17 @@ class LLMEngineTNE(LLMEngineBase):
         model_name = self.llm_model.name()
         temperature = 0
 
+        if model_name == "Llama-3.1-70B-Instruct":
+            max_tokens = 2048
+        else:
+            max_tokens = 4096
+        temperature = 0
+
         stream_response = await self.async_client.chat.completions.create(
             model=model_name,
             messages=messages,
             stream=True,
-            max_tokens=4096,
+            max_tokens=max_tokens,
             temperature=temperature,
         )
 
