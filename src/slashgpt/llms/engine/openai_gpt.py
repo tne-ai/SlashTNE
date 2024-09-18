@@ -97,10 +97,46 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         top_p = 0.00000000000001
         # max_tokens = manifest.max_tokens()
 
-        # TODO: parse each message to see if it contains an image URL
         content = []
+        # Check for images
+        detected_img = False
+        img_text_content = {"type": "text"}
+
+        # First parse the messages to see if there are any image URLs
+        for message in messages:
+            # System prompt becomes text input to the model
+            if message.get("role") == "system":
+                img_text_content["text"] = message.get("content")
+                content.append(img_text_content)
+            # Now we extract the image url from the user content
+            elif message.get("role") == "user":
+                url_ind = message.get("content").find("https://")
+                if url_ind >= 0:
+                    detected_img = True
+                    img_url = message.get("content")[url_ind:].split(" ")[0]
+                    # TODO(lucas): Expose detail parameter in manifest
+                    content.append({"type": "image_url", "image_url": {"url": img_url, "detail": "low"}})
+
+        # Next, check if any base64 encoded images have been passed to us
+        if images:
+            detected_img = True
+            for image in images:
+                if is_base64_png(image):
+                    img_url = f"data:image/png;base64, {image}"
+                elif is_base64_jpg(image):
+                    img_url = f"data:image/jpg;base64, {image}"
+                else:
+                    raise NotImplementedError
+                content.append({"type": "image_url", "image_url": {"url": img_url, "detail": "auto"}})
+
+        if detected_img:
+            if model_name != "gpt-4o":
+                raise ValueError(f"Image input not supported for model {model_name}")
+            messages = [{"role": "user", "content": content}]
+            params = {"model": model_name, "messages": messages, "stream": stream, "top_p": top_p}
+
         # GPT-o1* models do not support system role
-        if "o1-" in model_name:
+        elif "o1-" in model_name:
             sanitized_messages = []
             for message in messages:
                 sanitized_messages.append({"role": "user", "content": message.get("content")})
@@ -108,42 +144,6 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
             # While in beta, some parameters are not supported
             top_p = 1
             stream = False
-        if model_name == "gpt-4-vision-preview":
-            detected_img = False
-            img_text_content = {"type": "text"}
-
-            # First parse the messages to see if there are any image URLs
-            for message in messages:
-                # System prompt becomes text input to the model
-                if message.get("role") == "system":
-                    img_text_content["text"] = message.get("content")
-                    content.append(img_text_content)
-                # Now we extract the image url from the user content
-                elif message.get("role") == "user":
-                    url_ind = message.get("content").find("https://")
-                    if url_ind >= 0:
-                        detected_img = True
-                        img_url = message.get("content")[url_ind:].split(" ")[0]
-                        # TODO(lucas): Expose detail parameter in manifest
-                        content.append({"type": "image_url", "image_url": {"url": img_url, "detail": "low"}})
-
-            # Next, check if any base64 encoded images have been passed to us
-            if images:
-                detected_img = True
-                for image in images:
-                    if is_base64_png(image):
-                        img_url = f"data:image/png;base64, {image}"
-                    elif is_base64_jpg(image):
-                        img_url = f"data:image/jpg;base64, {image}"
-                    else:
-                        raise NotImplementedError
-                    content.append({"type": "image_url", "image_url": {"url": img_url, "detail": "auto"}})
-
-            if not detected_img:
-                raise ValueError("No images passed into vision model.")
-
-            messages = [{"role": "user", "content": content}]
-            params = {"model": model_name, "messages": messages, "stream": stream, "top_p": top_p}
         else:
             params = {
                 "model": model_name,
@@ -179,7 +179,7 @@ class LLMEngineOpenAIGPT(LLMEngineBase):
         else:
             # TODO(lucas): Support streaming and function calls (this only processes the text)
             stream_keys = ["model", "stream", "messages", "top_p", "seed"]
-            stream_params = {k: params[k] for k in stream_keys}
+            stream_params = {k: params.get(k) for k in stream_keys}
 
             if model_name == "gpt-4-vision-preview":
                 stream = self.async_client.chat.completions.create(max_tokens=4096, **stream_params)
