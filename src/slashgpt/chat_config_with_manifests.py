@@ -60,25 +60,6 @@ class ChatConfigWithManifests(ChatConfig):
         s3 = boto3.client("s3")
         manifests = {}
 
-        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
-        if "Contents" in response:
-            for obj in response["Contents"]:
-                file_name = obj["Key"]
-                if file_name.endswith(".json") or file_name.endswith(".yml") or file_name.endswith(".yaml") or file_name.endswith(".model"):
-                    file_obj = s3.get_object(Bucket=bucket_name, Key=file_name)
-                    file_content = file_obj["Body"].read().decode("utf-8")
-
-                    if file_name.endswith(".json"):
-                        manifests[file_name.split("/")[-1].split(".")[0]] = json.loads(file_content)
-                    elif file_name.endswith(".yml") or file_name.endswith(".yaml") or file_name.endswith(".model"):
-                        manifests[file_name.split("/")[-1].split(".")[0]] = yaml.safe_load(file_content)
-
-        return manifests
-
-    def load_manifests_s3(self, bucket_name: str, prefix: str):
-        s3 = boto3.client("s3")
-        manifests = {}
-
         # List objects within the specified bucket and prefix
         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
         if "Contents" in response:

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import aiohttp
-import requests
 
 from typing import TYPE_CHECKING, List, AsyncGenerator
 from slashgpt.llms.engine.base import LLMEngineBase

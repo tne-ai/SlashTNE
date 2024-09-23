@@ -9,9 +9,8 @@ import tiktoken  # for counting tokens
 import base64
 import binascii
 
-from slashgpt.function.function_call import FunctionCall
 from slashgpt.llms.engine.base import LLMEngineBase
-from slashgpt.utils.print import print_debug, print_error
+from slashgpt.utils.print import print_error
 
 
 if TYPE_CHECKING:

@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import sys
-import json
 from typing import TYPE_CHECKING, List, AsyncGenerator
 
 import tiktoken  # for counting tokens
 
 from slashgpt.llms.engine.base import LLMEngineBase
-from slashgpt.utils.print import print_debug, print_error
+from slashgpt.utils.print import print_error
 
 from groq import Groq, AsyncGroq
 
@@ -40,14 +39,13 @@ class LLMEngineGroq(LLMEngineBase):
         top_p = 0.00000000001
         max_tokens = 2048
         model_name = self.llm_model.name()
-        functions = manifest.functions()
+        manifest.functions()
         stream = manifest.stream()
         num_completions = manifest.num_completions()
-        images = manifest.images()
+        manifest.images()
         # max_tokens = manifest.max_tokens()
 
         # TODO: parse each message to see if it contains an image URL
-        content = []
         params = {
             "model": model_name,
             "messages": messages,
