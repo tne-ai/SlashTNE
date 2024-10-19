@@ -28,6 +28,7 @@ from .llms.engine.openai_gpt import LLMEngineOpenAIGPT
 from .llms.engine.openai_legacy import LLMEngineOpenAILegacy
 from .llms.engine.replicate import LLMEngineReplicate
 from .llms.engine.tne import LLMEngineTNE
+from .llms.engine.ollama import LLMEngineOllama
 from .llms.engine.google import LLMEngineGoogle
 from .llms.engine.anthropic_engine import LLMEngineAnthropic
 from .llms.engine.huggingface import LLMEngineHF
@@ -73,6 +74,7 @@ __all__ = [
     "LLMEngineReplicate",
     "LLMEngineAnthropic",
     "LLMEngineTNE",
+    "LLMEngineOllama",
     "LLMEngineHF",
     "LLMEngineGroq",
     "LLMEngineGoogle",

@@ -7,6 +7,7 @@ from slashgpt.llms.engine.google import LLMEngineGoogle
 from slashgpt.llms.engine.huggingface import LLMEngineHF
 from slashgpt.llms.engine.groq import LLMEngineGroq
 from slashgpt.llms.engine.tne import LLMEngineTNE
+from slashgpt.llms.engine.ollama import LLMEngineOllama
 
 default_llm_engine_configs = {
     "openai-gpt": LLMEngineOpenAIGPT,
@@ -17,7 +18,8 @@ default_llm_engine_configs = {
     "anthropic_engine": LLMEngineAnthropic,
     "google": LLMEngineGoogle,
     "hf": LLMEngineHF,
-    "groq": LLMEngineGroq
+    "groq": LLMEngineGroq,
+    "ollama": LLMEngineOllama,
 }
 
 default_llm_models = {
