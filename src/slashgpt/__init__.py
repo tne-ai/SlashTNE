@@ -75,6 +75,7 @@ __all__ = [
     "LLMEngineAnthropic",
     "LLMEngineTNE",
     "LLMEngineOllama",
+    "LLMEngineOpenRouter",
     "LLMEngineHF",
     "LLMEngineGroq",
     "LLMEngineGoogle",
