@@ -9,6 +9,7 @@ from slashgpt.llms.engine.groq import LLMEngineGroq
 from slashgpt.llms.engine.tne import LLMEngineTNE
 from slashgpt.llms.engine.ollama import LLMEngineOllama
 from slashgpt.llms.engine.openrouter import LLMEngineOpenRouter
+from slashgpt.llms.engine.deepseek import LLMEngineDeepSeek
 
 default_llm_engine_configs = {
     "openai-gpt": LLMEngineOpenAIGPT,
@@ -22,6 +23,7 @@ default_llm_engine_configs = {
     "groq": LLMEngineGroq,
     "ollama": LLMEngineOllama,
     "openrouter": LLMEngineOpenRouter,
+    "deepseek": LLMEngineDeepSeek
 }
 
 default_llm_models = {

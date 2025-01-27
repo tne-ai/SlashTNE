@@ -25,6 +25,7 @@ from .history.storage.memory import ChatHistoryMemoryStorage
 from .llms.engine.base import LLMEngineBase
 from .llms.engine.hosted import LLMEngineHosted
 from .llms.engine.openai_gpt import LLMEngineOpenAIGPT
+from .llms.engine.deepseek import LLMEngineDeepSeek
 from .llms.engine.openai_legacy import LLMEngineOpenAILegacy
 from .llms.engine.replicate import LLMEngineReplicate
 from .llms.engine.tne import LLMEngineTNE
@@ -76,6 +77,7 @@ __all__ = [
     "LLMEngineTNE",
     "LLMEngineOllama",
     "LLMEngineOpenRouter",
+    "LLMEngineDeepSeek",
     "LLMEngineHF",
     "LLMEngineGroq",
     "LLMEngineGoogle",
